@@ -1,0 +1,93 @@
+name: CI/CD
+
+on:
+  push:
+  pull_request:
+
+env:
+  DOTNET_DOWNLOAD_URL: "https://dotnetcli.azureedge.net/dotnet/Sdk/8.0.100-rc.2.23502.2/dotnet-sdk-8.0.100-rc.2.23502.2-linux-x64.tar.gz"
+  DOTNET_SDK_VERSION: "8.0.100-rc.2.23502.2"
+  DOTNET_FILE: "dotnet-sdk-8.0.100-rc.2.23502.2-linux-x64.tar.gz"
+  ARTIFACT_NAME: "le_baguette"
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Download & install .NET SDK
+        run: |
+          mkdir dotnet
+          cd dotnet
+          curl -LO ${{ env.DOTNET_DOWNLOAD_URL }}
+          tar zxf ${{ env.DOTNET_FILE }}
+          rm -R ${{ env.DOTNET_FILE }}
+          cd ../
+          sudo rm -R /usr/share/dotnet
+          sudo mv -f ./dotnet /usr/share/
+      - name: Replace placeholder version
+        run: |
+          sed -i 's/5123.0.0/${{ vars.MAJOR_VERSION }}.${{ vars.MINOR_VERSION }}.${{ env.PATCH_VERSION }}/' ./Core/Core.csproj
+        env:
+          PATCH_VERSION: ${{ github.run_number }}
+      - name: Run tests
+        run: |
+          dotnet test Cuplan.sln
+      - name: Build & package
+        run: |
+          dotnet pack Cuplan.sln
+          mkdir nuget
+          mv ./Core/bin/Release/*.nupkg ./nuget/
+          zip -r nuget.zip ./nuget
+      - name: Upload nuget packages as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ./nuget.zip
+  cd:
+    needs: ci
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ./
+      - name: Unzip NuGet packages
+        run: |
+          unzip nuget.zip
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          PATCH_VERSION: ${{ github.run_number }}
+        with:
+          tag_name: v${{ vars.MAJOR_VERSION }}.${{ vars.MINOR_VERSION }}.${{ env.PATCH_VERSION }}
+          release_name: v${{ vars.MAJOR_VERSION }}.${{ vars.MINOR_VERSION }}.${{ env.PATCH_VERSION }}
+          draft: false
+          prerelease: false
+      - name: Publish NuGet packages
+        run: |
+          cd nuget
+          dotnet nuget push *.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source ${{ vars.NUGET_SOURCE }}
+  clean:
+    if: success() || failure()
+    
+    needs: cd
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Remove artifact
+        uses: geekyeggo/delete-artifact@v2
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
