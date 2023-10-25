@@ -15,18 +15,32 @@ internal struct BitwardenSecret
     public string revisionDate;
 }
 
-public class BitwardenSecretsManager(ILogger<BitwardenSecretsManager> logger, string accessToken)
-    : ISecretsManager
+public class BitwardenSecretsManager : ISecretsManager
 {
     public static readonly string AccessTokenEnvVar = "SECRETS_MANAGER_ACCESS_TOKEN";
 
+    private readonly string? _accessToken;
+    private readonly ILogger<BitwardenSecretsManager>? _logger;
+
+    public BitwardenSecretsManager(ILogger<BitwardenSecretsManager>? logger)
+    {
+        _logger = logger;
+        _accessToken = Environment.GetEnvironmentVariable(AccessTokenEnvVar);
+    }
+
     public string? get(string secretId)
     {
+        if (_accessToken is null)
+        {
+            _logger?.LogTrace("tried to get secret with no access token");
+            return null;
+        }
+
         try
         {
             Process bws = new();
             bws.StartInfo.FileName = "bws";
-            bws.StartInfo.Arguments = $"secret get {secretId} --access-token {accessToken}";
+            bws.StartInfo.Arguments = $"secret get {secretId} --access-token {_accessToken}";
             bws.StartInfo.RedirectStandardOutput = true;
             bws.Start();
 
@@ -40,7 +54,7 @@ public class BitwardenSecretsManager(ILogger<BitwardenSecretsManager> logger, st
         }
         catch (Exception e)
         {
-            logger.LogWarning($"failed to get secret: {e}");
+            _logger?.LogWarning($"failed to get secret: {e}");
             return null;
         }
     }

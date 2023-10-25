@@ -9,14 +9,9 @@ public class BitwardenSecretsManagerTestFixture
 {
     public BitwardenSecretsManagerTestFixture()
     {
-        string? accessToken = Environment.GetEnvironmentVariable(BitwardenSecretsManager.AccessTokenEnvVar);
-
-        if (accessToken is null)
-            Assert.Fail(
-                $"Expected environment variable '{BitwardenSecretsManager.AccessTokenEnvVar}' to be initialized.");
         Mock<ILogger<BitwardenSecretsManager>> logger = new(MockBehavior.Loose);
 
-        SecretsManager = new BitwardenSecretsManager(logger.Object, accessToken);
+        SecretsManager = new BitwardenSecretsManager(logger.Object);
     }
 
     public BitwardenSecretsManager SecretsManager { get; }
