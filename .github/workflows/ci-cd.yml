@@ -37,6 +37,13 @@ jobs:
           PATCH_VERSION: ${{ github.run_number }}
       - name: Run tests
         run: |
+          mkdir bin
+          cd bin
+          curl -LO https://github.com/bitwarden/sdk/releases/download/bws-v0.3.0/bws-x86_64-unknown-linux-gnu-0.3.0.zip
+          unzip bws-x86_64-unknown-linux-gnu-0.3.0.zip
+          chmod +x bws
+          export PATH=$PATH:$PWD
+          cd ../
           dotnet test Cuplan.sln
       - name: Build & package
         run: |
