@@ -7,5 +7,5 @@ public interface ISecretsManager
     /// </summary>
     /// <param name="secretId">The id of the secret.</param>
     /// <returns>The secret if it is found, null otherwise.</returns>
-    string? get(string secretId);
+    string? Get(string secretId);
 }

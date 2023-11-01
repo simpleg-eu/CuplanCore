@@ -28,7 +28,7 @@ public class BitwardenSecretsManager : ISecretsManager
         _accessToken = Environment.GetEnvironmentVariable(AccessTokenEnvVar);
     }
 
-    public string? get(string secretId)
+    public string? Get(string secretId)
     {
         if (_accessToken is null)
         {

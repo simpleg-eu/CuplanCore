@@ -29,7 +29,7 @@ public class BitwardenSecretsManagerTest
         const string expectedSecret = "le_secret :)";
 
 
-        string? secret = SecretsManager.get(testSecret);
+        string? secret = SecretsManager.Get(testSecret);
 
 
         Assert.Equal(expectedSecret, secret);
@@ -41,7 +41,7 @@ public class BitwardenSecretsManagerTest
         const string nonExistingSecret = "7c1d5dfd-a58b-47cf-bee5-b0a600fe50c8";
 
 
-        string? secret = SecretsManager.get(nonExistingSecret);
+        string? secret = SecretsManager.Get(nonExistingSecret);
 
 
         Assert.Null(secret);
