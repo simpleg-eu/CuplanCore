@@ -1,6 +1,6 @@
 namespace Core;
 
-public class Error<TErrorKind>(TErrorKind errorKind, string message) where TErrorKind : Enum
+public class Error<TErrorKind>(TErrorKind errorKind, string message)
 {
     public TErrorKind ErrorKind { get; } = errorKind;
     public string Message { get; } = message;
