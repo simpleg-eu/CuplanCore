@@ -12,10 +12,15 @@ internal class ChildObject
     public override bool Equals(object? obj)
     {
         if (obj is null) return false;
-        ChildObject other = obj as ChildObject;
+        ChildObject? other = obj as ChildObject;
         if (other is null) return false;
 
         return A == other.A && B == other.B;
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(A, B);
     }
 }
 
@@ -28,10 +33,15 @@ internal class Child
     public override bool Equals(object? obj)
     {
         if (obj is null) return false;
-        Child other = obj as Child;
+        Child? other = obj as Child;
         if (other == null) return false;
 
         return Name == other.Name && Description == other.Description && Object.Equals(other.Object);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Name, Description, Object);
     }
 }
 
