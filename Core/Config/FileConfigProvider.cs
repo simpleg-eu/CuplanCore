@@ -115,7 +115,7 @@ public class FileConfigProvider : IConfigProvider
 
         T? value;
 
-        if (token is JObject)
+        if (token is JObject || token is JArray)
             value = token.ToObject<T>();
         else
             value = token.Value<T>();

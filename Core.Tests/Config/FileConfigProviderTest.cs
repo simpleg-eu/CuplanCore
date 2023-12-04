@@ -83,4 +83,21 @@ public class FileConfigProviderTest : TestBase
         Assert.True(result.IsOk);
         Assert.Equal(expectedValue, result.Unwrap());
     }
+
+    [Fact]
+    public async Task Get_ExistingComplexKeyThatPointsToArray_ExpectedValue()
+    {
+        string[] origins =
+        {
+            "http://localhost:4200",
+            "https://cuplan.simpleg.eu"
+        };
+
+        FileConfigProvider configProvider = new(TestDataPath);
+        Result<string[], Error<string>>
+            result = await configProvider.Get<string[]>("other/new/array.yaml|Cors:Origins");
+
+        Assert.True(result.IsOk);
+        Assert.True(origins.SequenceEqual(result.Unwrap()));
+    }
 }
