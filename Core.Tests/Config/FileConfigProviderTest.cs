@@ -57,7 +57,7 @@ public class FileConfigProviderTest : TestBase
         const int expectedValue = 1234;
 
         FileConfigProvider configProvider = new(TestDataPath);
-        Result<int, Error<string>> result = await configProvider.Get<int>("application.json|Configuration:Nested:Test");
+        Result<int, Error<string>> result = await configProvider.Get<int>("application.yaml|Configuration:Nested:Test");
 
         Assert.True(result.IsOk);
         Assert.Equal(expectedValue, result.Unwrap());
@@ -78,7 +78,7 @@ public class FileConfigProviderTest : TestBase
         };
 
         FileConfigProvider configProvider = new(TestDataPath);
-        Result<Child, Error<string>> result = await configProvider.Get<Child>("dir1/dir2/example.json|Parent:Child");
+        Result<Child, Error<string>> result = await configProvider.Get<Child>("dir1/dir2/example.yaml|Parent:Child");
 
         Assert.True(result.IsOk);
         Assert.Equal(expectedValue, result.Unwrap());

@@ -1,5 +1,6 @@
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace Core.Config;
 
@@ -36,31 +37,40 @@ public class FileConfigProvider : IConfigProvider
 
         Result<object, Empty> cacheResult = _cache.TryGetValue(filePath);
 
-        JObject? jsonObject = null;
+        JObject? configObject = null;
 
-        if (cacheResult.IsOk) jsonObject = cacheResult.Unwrap() as JObject;
+        if (cacheResult.IsOk) configObject = cacheResult.Unwrap() as JObject;
 
-        if (jsonObject is null)
+        if (configObject is null)
         {
             if (!File.Exists(filePath))
                 return Result<T, Error<string>>.Err(new Error<string>(ErrorKind.NotFound,
                     $"could not find file: {filePath}"));
 
-            string configJson = await File.ReadAllTextAsync(filePath);
-            jsonObject = JsonConvert.DeserializeObject<JObject>(configJson);
+            string configYaml = await File.ReadAllTextAsync(filePath);
+            IDeserializer deserializer =
+                new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
+            object? yamlObject = deserializer.Deserialize(configYaml);
 
-            if (jsonObject is null)
+            if (yamlObject is null)
                 return Result<T, Error<string>>.Err(new Error<string>(ErrorKind.InvalidFileContent,
-                    "configuration file does not contain a valid JSON object"));
+                    "invalid file content"));
 
-            _cache.Set(filePath, jsonObject, _expireCacheItemAfterTimeSpan);
+            // YAML conversion to JSON because Microconfig works with YAML.
+            ISerializer serializer = new SerializerBuilder().JsonCompatible().Build();
+
+            string json = serializer.Serialize(yamlObject);
+
+            configObject = JObject.Parse(json);
+
+            _cache.Set(filePath, configObject, _expireCacheItemAfterTimeSpan);
         }
 
         Result<string[], Error<string>> subKeysResult = ExtractSubKeysFromKey(key);
 
         if (!subKeysResult.IsOk) return Result<T, Error<string>>.Err(subKeysResult.UnwrapErr());
 
-        Result<T, Error<string>> valueResult = GetValue<T>(subKeysResult.Unwrap(), jsonObject);
+        Result<T, Error<string>> valueResult = GetValue<T>(subKeysResult.Unwrap(), configObject);
 
         if (!valueResult.IsOk) return Result<T, Error<string>>.Err(valueResult.UnwrapErr());
 
