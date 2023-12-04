@@ -28,7 +28,7 @@ public class Result<TOk, TError>
 
     public TError UnwrapErr()
     {
-        if (IsOk) throw new InvalidOperationException("tired to unwrap 'Err' when the result was an 'Ok'.");
+        if (IsOk) throw new InvalidOperationException("tried to unwrap 'Err' when the result was an 'Ok'.");
 
         return _error;
     }
