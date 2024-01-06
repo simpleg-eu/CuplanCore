@@ -19,11 +19,11 @@ public class ServerConfigDownloaderTest : TestBase, IDisposable
     public async Task Download_ExpectedFile()
     {
         const string exampleUrl = "https://simpleg.eu";
+        const string exampleStage = "dummy";
+        const string exampleEnvironment = "dummy";
         const string exampleComponent = "dummy";
-        const string exampleFile = "example.zip";
-        const string expectedFile = "application.yaml";
-        const string mockExampleUrl = $"{exampleUrl}/get/{exampleComponent}";
-        byte[] exampleFileBytes = await File.ReadAllBytesAsync($"{TestDataPath}/{exampleFile}");
+        const string mockExampleUrl = $"{exampleUrl}/config?stage={exampleStage}&environment={exampleEnvironment}&component={exampleComponent}";
+        byte[] exampleFileBytes = await File.ReadAllBytesAsync($"{TestDataPath}/example.zip");
         HttpContent content = new ByteArrayContent(exampleFileBytes);
         HttpResponseMessage response = new();
         response.StatusCode = HttpStatusCode.OK;
@@ -32,14 +32,11 @@ public class ServerConfigDownloaderTest : TestBase, IDisposable
         httpClient.Setup(h => h.GetAsync(mockExampleUrl))
             .ReturnsAsync(response);
 
-        ServerConfigDownloader downloader = new(httpClient.Object, new ZipExtractor());
+        ServerConfigDownloader downloader = new(httpClient.Object);
 
-        Result<string, Error> result = await downloader.Download(exampleUrl, exampleComponent);
+        Result<byte[], Error> result = await downloader.Download(exampleUrl, exampleStage, exampleEnvironment, exampleComponent);
 
         Assert.True(result.IsOk);
-        _targetDirectory = result.Unwrap();
-        Assert.NotNull(_targetDirectory);
-        Assert.True(File.Exists($"{_targetDirectory}/{expectedFile}"),
-            $"Expected file '{expectedFile}' does not exist within target directory '{_targetDirectory}'.");
+        Assert.Equal(exampleFileBytes, result.Unwrap());
     }
 }
