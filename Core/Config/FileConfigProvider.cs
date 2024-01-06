@@ -6,8 +6,7 @@ namespace Core.Config;
 
 public class FileConfigProvider : IConfigProvider
 {
-    private const string KeySeparator = "|";
-    private const string SubKeySeparator = ":";
+    private const string KeySeparator = ":";
 
     private readonly Cache _cache;
     private readonly TimeSpan _expireCacheItemAfterTimeSpan;
@@ -27,14 +26,9 @@ public class FileConfigProvider : IConfigProvider
         _cache.Dispose();
     }
 
-    public async Task<Result<T, Error>> Get<T>(string key)
+    public async Task<Result<T, Error>> Get<T>(string filePath, string key)
     {
-        Result<string, Error> filePathResult = ExtractPathFromKey(key);
-
-        if (!filePathResult.IsOk) return Result<T, Error>.Err(filePathResult.UnwrapErr());
-
-        string filePath = filePathResult.Unwrap();
-
+        filePath = $"{_targetDirectory}/{filePath}";
         Result<object, Empty> cacheResult = _cache.TryGetValue(filePath);
 
         JObject? configObject = null;
@@ -66,37 +60,18 @@ public class FileConfigProvider : IConfigProvider
             _cache.Set(filePath, configObject, _expireCacheItemAfterTimeSpan);
         }
 
-        Result<string[], Error> subKeysResult = ExtractSubKeysFromKey(key);
-
-        if (!subKeysResult.IsOk) return Result<T, Error>.Err(subKeysResult.UnwrapErr());
-
-        Result<T, Error> valueResult = GetValue<T>(subKeysResult.Unwrap(), configObject);
+        string[] subKeys = key.Split(KeySeparator);
+        
+        Result<T, Error> valueResult = GetValue<T>(subKeys, configObject);
 
         if (!valueResult.IsOk) return Result<T, Error>.Err(valueResult.UnwrapErr());
 
         return Result<T, Error>.Ok(valueResult.Unwrap());
     }
 
-    private Result<string, Error> ExtractPathFromKey(string key)
-    {
-        string[] parts = key.Split(KeySeparator);
-
-        if (parts.Length != 2)
-            return Result<string, Error>.Err(new Error(ErrorKind.InvalidArguments,
-                $"key does not contain two parts: {key}"));
-
-        return Result<string, Error>.Ok($"{_targetDirectory}/{parts[0]}");
-    }
-
     private Result<string[], Error> ExtractSubKeysFromKey(string key)
     {
-        string[] parts = key.Split(KeySeparator);
-
-        if (parts.Length != 2)
-            return Result<string[], Error>.Err(new Error(ErrorKind.InvalidArguments,
-                $"key does not contain two parts: {key}"));
-
-        string[] subKeys = parts[1].Split(SubKeySeparator);
+        string[] subKeys = key.Split(KeySeparator);
 
         return Result<string[], Error>.Ok(subKeys);
     }
