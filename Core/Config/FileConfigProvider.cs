@@ -69,7 +69,7 @@ public class FileConfigProvider : IConfigProvider
         return Result<T, Error>.Ok(valueResult.Unwrap());
     }
 
-    private Result<T, Error> GetValue<T>(string[] subKeys, JObject jsonObject)
+    private static Result<T, Error> GetValue<T>(IEnumerable<string> subKeys, JObject jsonObject)
     {
         JToken? token = jsonObject;
         foreach (string subKey in subKeys)
