@@ -69,13 +69,6 @@ public class FileConfigProvider : IConfigProvider
         return Result<T, Error>.Ok(valueResult.Unwrap());
     }
 
-    private Result<string[], Error> ExtractSubKeysFromKey(string key)
-    {
-        string[] subKeys = key.Split(KeySeparator);
-
-        return Result<string[], Error>.Ok(subKeys);
-    }
-
     private Result<T, Error> GetValue<T>(string[] subKeys, JObject jsonObject)
     {
         JToken? token = jsonObject;
