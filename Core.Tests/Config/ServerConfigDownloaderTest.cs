@@ -10,10 +10,6 @@ public class ServerConfigDownloaderTest : TestBase, IDisposable
 {
     private string? _targetDirectory;
 
-    public ServerConfigDownloaderTest() : base(typeof(ServerConfigDownloaderTest))
-    {
-    }
-
     public void Dispose()
     {
         if (Directory.Exists(_targetDirectory)) Directory.Delete(_targetDirectory, true);

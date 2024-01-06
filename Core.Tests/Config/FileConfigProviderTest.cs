@@ -47,10 +47,6 @@ internal class Child
 
 public class FileConfigProviderTest : TestBase
 {
-    public FileConfigProviderTest() : base(typeof(FileConfigProviderTest))
-    {
-    }
-
     [Fact]
     public async Task Get_ExistingKey_ExpectedValue()
     {

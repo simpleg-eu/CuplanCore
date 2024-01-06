@@ -4,9 +4,9 @@ public class TestBase
 {
     private const string RootNamespace = "Cuplan.Core.Tests";
 
-    public TestBase(Type type)
+    public TestBase()
     {
-        string? typeNamespace = type.Namespace;
+        string? typeNamespace = GetType().Namespace;
         TestDataPath = $"{Directory.GetCurrentDirectory()}/TestData";
 
         if (typeNamespace is null) return;
@@ -14,7 +14,7 @@ public class TestBase
         if (typeNamespace.Length == RootNamespace.Length) return;
 
         TestDataPath =
-            $"{Directory.GetCurrentDirectory()}/TestData/{typeNamespace.Replace($"{RootNamespace}.", "").Replace(".", "/")}/{type.Name}";
+            $"{Directory.GetCurrentDirectory()}/TestData/{typeNamespace.Replace($"{RootNamespace}.", "").Replace(".", "/")}/{GetType().Name}";
     }
 
     public string TestDataPath { get; }
