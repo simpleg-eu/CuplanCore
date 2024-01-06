@@ -56,6 +56,7 @@ public class ServerConfigDownloader : IConfigDownloader
             FastZip fastZip = new();
             fastZip.ExtractZip(packageFile, targetDirectory, FastZip.Overwrite.Always, null, null, null, true);
 
+            File.Delete(packageFile);
             return Result<Empty, Error>.Ok(new Empty());
         }
         catch (Exception e)
