@@ -20,14 +20,14 @@ public class ConfigManager : IDisposable
     /// <param name="url">Url from which to download the configuration.</param>
     /// <param name="component">Component to be downloaded.</param>
     /// <returns>An <see cref="IConfigProvider" /> or an error.</returns>
-    public async Task<Result<IConfigProvider, Error<string>>> Download(string url, string component)
+    public async Task<Result<IConfigProvider, Error>> Download(string url, string component)
     {
-        Result<string, Error<string>> downloadResult = await _downloader.Download(url, component);
+        Result<string, Error> downloadResult = await _downloader.Download(url, component);
 
-        if (!downloadResult.IsOk) return Result<IConfigProvider, Error<string>>.Err(downloadResult.UnwrapErr());
+        if (!downloadResult.IsOk) return Result<IConfigProvider, Error>.Err(downloadResult.UnwrapErr());
 
         IConfigProvider configProvider = new FileConfigProvider(downloadResult.Unwrap());
 
-        return Result<IConfigProvider, Error<string>>.Ok(configProvider);
+        return Result<IConfigProvider, Error>.Ok(configProvider);
     }
 }

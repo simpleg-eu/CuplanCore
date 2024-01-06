@@ -38,7 +38,7 @@ public class ServerConfigDownloaderTest : TestBase, IDisposable
 
         ServerConfigDownloader downloader = new(httpClient.Object);
 
-        Result<string, Error<string>> result = await downloader.Download(exampleUrl, exampleComponent);
+        Result<string, Error> result = await downloader.Download(exampleUrl, exampleComponent);
 
         Assert.True(result.IsOk);
         _targetDirectory = result.Unwrap();

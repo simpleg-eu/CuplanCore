@@ -17,7 +17,7 @@ public class ServerConfigDownloader : IConfigDownloader
         _client.Dispose();
     }
 
-    public async Task<Result<string, Error<string>>> Download(string url, string component)
+    public async Task<Result<string, Error>> Download(string url, string component)
     {
         try
         {
@@ -25,20 +25,20 @@ public class ServerConfigDownloader : IConfigDownloader
             string targetDirectory = $"{Directory.GetCurrentDirectory()}/{new Guid().ToString()}";
             Directory.CreateDirectory(targetDirectory);
 
-            Result<Empty, Error<string>> downloadResult = await DownloadConfig(url, targetDirectory);
+            Result<Empty, Error> downloadResult = await DownloadConfig(url, targetDirectory);
 
-            if (!downloadResult.IsOk) return Result<string, Error<string>>.Err(downloadResult.UnwrapErr());
+            if (!downloadResult.IsOk) return Result<string, Error>.Err(downloadResult.UnwrapErr());
 
-            return Result<string, Error<string>>.Ok(targetDirectory);
+            return Result<string, Error>.Ok(targetDirectory);
         }
         catch (Exception e)
         {
-            return Result<string, Error<string>>.Err(new Error<string>(ErrorKind.ExceptionThrown,
+            return Result<string, Error>.Err(new Error(ErrorKind.ExceptionThrown,
                 $"an exception '{e.GetType().Name}' has been thrown: {e.Message}: {e.StackTrace}"));
         }
     }
 
-    private async Task<Result<Empty, Error<string>>> DownloadConfig(string url, string targetDirectory)
+    private async Task<Result<Empty, Error>> DownloadConfig(string url, string targetDirectory)
     {
         string packageFile = $"{new Guid().ToString()}.zip";
 
@@ -47,7 +47,7 @@ public class ServerConfigDownloader : IConfigDownloader
             using HttpResponseMessage response = await _client.GetAsync(url);
 
             if (response.StatusCode != HttpStatusCode.OK)
-                return Result<Empty, Error<string>>.Err(new Error<string>(ErrorKind.DownloadFailure,
+                return Result<Empty, Error>.Err(new Error(ErrorKind.DownloadFailure,
                     $"failed to download zip file containing configuration with url: {url}"));
 
             byte[] configZipData = await response.Content.ReadAsByteArrayAsync();
@@ -56,11 +56,11 @@ public class ServerConfigDownloader : IConfigDownloader
             FastZip fastZip = new();
             fastZip.ExtractZip(packageFile, targetDirectory, FastZip.Overwrite.Always, null, null, null, true);
 
-            return Result<Empty, Error<string>>.Ok(new Empty());
+            return Result<Empty, Error>.Ok(new Empty());
         }
         catch (Exception e)
         {
-            return Result<Empty, Error<string>>.Err(new Error<string>(ErrorKind.DownloadFailure,
+            return Result<Empty, Error>.Err(new Error(ErrorKind.DownloadFailure,
                 $"an exception '{e.GetType().Name}' has been thrown while downloading configuration: {e.Message}: {e.StackTrace}"));
         }
         finally

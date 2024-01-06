@@ -27,11 +27,11 @@ public class FileConfigProvider : IConfigProvider
         _cache.Dispose();
     }
 
-    public async Task<Result<T, Error<string>>> Get<T>(string key)
+    public async Task<Result<T, Error>> Get<T>(string key)
     {
-        Result<string, Error<string>> filePathResult = ExtractPathFromKey(key);
+        Result<string, Error> filePathResult = ExtractPathFromKey(key);
 
-        if (!filePathResult.IsOk) return Result<T, Error<string>>.Err(filePathResult.UnwrapErr());
+        if (!filePathResult.IsOk) return Result<T, Error>.Err(filePathResult.UnwrapErr());
 
         string filePath = filePathResult.Unwrap();
 
@@ -44,7 +44,7 @@ public class FileConfigProvider : IConfigProvider
         if (configObject is null)
         {
             if (!File.Exists(filePath))
-                return Result<T, Error<string>>.Err(new Error<string>(ErrorKind.NotFound,
+                return Result<T, Error>.Err(new Error(ErrorKind.NotFound,
                     $"could not find file: {filePath}"));
 
             string configYaml = await File.ReadAllTextAsync(filePath);
@@ -53,7 +53,7 @@ public class FileConfigProvider : IConfigProvider
             object? yamlObject = deserializer.Deserialize(configYaml);
 
             if (yamlObject is null)
-                return Result<T, Error<string>>.Err(new Error<string>(ErrorKind.InvalidFileContent,
+                return Result<T, Error>.Err(new Error(ErrorKind.InvalidFileContent,
                     "invalid file content"));
 
             // YAML conversion to JSON because Microconfig works with YAML.
@@ -66,42 +66,42 @@ public class FileConfigProvider : IConfigProvider
             _cache.Set(filePath, configObject, _expireCacheItemAfterTimeSpan);
         }
 
-        Result<string[], Error<string>> subKeysResult = ExtractSubKeysFromKey(key);
+        Result<string[], Error> subKeysResult = ExtractSubKeysFromKey(key);
 
-        if (!subKeysResult.IsOk) return Result<T, Error<string>>.Err(subKeysResult.UnwrapErr());
+        if (!subKeysResult.IsOk) return Result<T, Error>.Err(subKeysResult.UnwrapErr());
 
-        Result<T, Error<string>> valueResult = GetValue<T>(subKeysResult.Unwrap(), configObject);
+        Result<T, Error> valueResult = GetValue<T>(subKeysResult.Unwrap(), configObject);
 
-        if (!valueResult.IsOk) return Result<T, Error<string>>.Err(valueResult.UnwrapErr());
+        if (!valueResult.IsOk) return Result<T, Error>.Err(valueResult.UnwrapErr());
 
-        return Result<T, Error<string>>.Ok(valueResult.Unwrap());
+        return Result<T, Error>.Ok(valueResult.Unwrap());
     }
 
-    private Result<string, Error<string>> ExtractPathFromKey(string key)
+    private Result<string, Error> ExtractPathFromKey(string key)
     {
         string[] parts = key.Split(KeySeparator);
 
         if (parts.Length != 2)
-            return Result<string, Error<string>>.Err(new Error<string>(ErrorKind.InvalidArguments,
+            return Result<string, Error>.Err(new Error(ErrorKind.InvalidArguments,
                 $"key does not contain two parts: {key}"));
 
-        return Result<string, Error<string>>.Ok($"{_targetDirectory}/{parts[0]}");
+        return Result<string, Error>.Ok($"{_targetDirectory}/{parts[0]}");
     }
 
-    private Result<string[], Error<string>> ExtractSubKeysFromKey(string key)
+    private Result<string[], Error> ExtractSubKeysFromKey(string key)
     {
         string[] parts = key.Split(KeySeparator);
 
         if (parts.Length != 2)
-            return Result<string[], Error<string>>.Err(new Error<string>(ErrorKind.InvalidArguments,
+            return Result<string[], Error>.Err(new Error(ErrorKind.InvalidArguments,
                 $"key does not contain two parts: {key}"));
 
         string[] subKeys = parts[1].Split(SubKeySeparator);
 
-        return Result<string[], Error<string>>.Ok(subKeys);
+        return Result<string[], Error>.Ok(subKeys);
     }
 
-    private Result<T, Error<string>> GetValue<T>(string[] subKeys, JObject jsonObject)
+    private Result<T, Error> GetValue<T>(string[] subKeys, JObject jsonObject)
     {
         JToken? token = jsonObject;
         foreach (string subKey in subKeys)
@@ -109,7 +109,7 @@ public class FileConfigProvider : IConfigProvider
             token = token[subKey];
 
             if (token is null)
-                return Result<T, Error<string>>.Err(new Error<string>(ErrorKind.InvalidArguments,
+                return Result<T, Error>.Err(new Error(ErrorKind.InvalidArguments,
                     $"expected a JToken for subKey '{subKey}' but got null instead"));
         }
 
@@ -121,8 +121,8 @@ public class FileConfigProvider : IConfigProvider
             value = token.Value<T>();
 
         if (value is null)
-            return Result<T, Error<string>>.Err(new Error<string>(ErrorKind.InvalidArguments, "failed to get value"));
+            return Result<T, Error>.Err(new Error(ErrorKind.InvalidArguments, "failed to get value"));
 
-        return Result<T, Error<string>>.Ok(value);
+        return Result<T, Error>.Ok(value);
     }
 }

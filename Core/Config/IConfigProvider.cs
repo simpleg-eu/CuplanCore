@@ -15,5 +15,5 @@ public interface IConfigProvider : IDisposable
     ///     or an <see cref="Error{TErrorKind}" /> if the configuration could not be retrieved or it doesn't exist.
     /// </returns>
     /// <throws><see cref="InvalidOperationException" /> if the configuration located at the specified key is not of type T.</throws>
-    public Task<Result<T, Error<string>>> Get<T>(string key);
+    public Task<Result<T, Error>> Get<T>(string key);
 }

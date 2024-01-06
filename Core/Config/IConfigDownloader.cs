@@ -12,5 +12,5 @@ public interface IConfigDownloader : IDisposable
     ///     A string indicating the directory where the configuration files have been downloaded into, or an
     ///     <see cref="Error{TErrorKind}" />.
     /// </returns>
-    public Task<Result<string, Error<string>>> Download(string url, string component);
+    public Task<Result<string, Error>> Download(string url, string component);
 }
