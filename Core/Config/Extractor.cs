@@ -3,7 +3,7 @@ namespace Core.Config;
 /// <summary>
 /// Interface which provides a facility to extract a configuration package.
 /// </summary>
-public interface Extractor
+public interface IExtractor
 {
     /// <summary>
     /// Extracts the configuration package's content into the targetPath.

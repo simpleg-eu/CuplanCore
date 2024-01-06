@@ -9,7 +9,7 @@ public class ZipExtractorTest : TestBase
     [Fact]
     public void Extract_DummyZip_ExtractsCorrectly()
     {
-        Extractor extractor = new ZipExtractor();
+        IExtractor extractor = new ZipExtractor();
         string guid = Guid.NewGuid().ToString();
         byte[] packageData = File.ReadAllBytes($"{TestDataPath}/dummy.zip");
         

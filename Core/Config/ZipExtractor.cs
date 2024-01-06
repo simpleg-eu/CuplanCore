@@ -2,7 +2,7 @@ using ICSharpCode.SharpZipLib.Zip;
 
 namespace Core.Config;
 
-public class ZipExtractor : Extractor
+public class ZipExtractor : IExtractor
 {
     public Result<Empty, Error> Extract(byte[] packageData, string targetPath)
     {

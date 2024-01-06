@@ -6,10 +6,12 @@ namespace Core.Config;
 public class ServerConfigDownloader : IConfigDownloader
 {
     private readonly IHttpClient _client;
+    private readonly IExtractor _extractor;
 
-    public ServerConfigDownloader(IHttpClient client)
+    public ServerConfigDownloader(IHttpClient client, IExtractor extractor)
     {
         _client = client;
+        _extractor = extractor;
     }
 
     public void Dispose()
@@ -40,8 +42,6 @@ public class ServerConfigDownloader : IConfigDownloader
 
     private async Task<Result<Empty, Error>> DownloadConfig(string url, string targetDirectory)
     {
-        string packageFile = $"{new Guid().ToString()}.zip";
-
         try
         {
             using HttpResponseMessage response = await _client.GetAsync(url);
@@ -51,22 +51,13 @@ public class ServerConfigDownloader : IConfigDownloader
                     $"failed to download zip file containing configuration with url: {url}"));
 
             byte[] configZipData = await response.Content.ReadAsByteArrayAsync();
-            await File.WriteAllBytesAsync(packageFile, configZipData);
-
-            FastZip fastZip = new();
-            fastZip.ExtractZip(packageFile, targetDirectory, FastZip.Overwrite.Always, null, null, null, true);
-
-            File.Delete(packageFile);
-            return Result<Empty, Error>.Ok(new Empty());
+            
+            return _extractor.Extract(configZipData, targetDirectory);
         }
         catch (Exception e)
         {
             return Result<Empty, Error>.Err(new Error(ErrorKind.DownloadFailure,
                 $"an exception '{e.GetType().Name}' has been thrown while downloading configuration: {e.Message}: {e.StackTrace}"));
-        }
-        finally
-        {
-            if (File.Exists(packageFile)) File.Delete(packageFile);
         }
     }
 }

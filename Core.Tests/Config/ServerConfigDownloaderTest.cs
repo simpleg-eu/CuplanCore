@@ -32,7 +32,7 @@ public class ServerConfigDownloaderTest : TestBase, IDisposable
         httpClient.Setup(h => h.GetAsync(mockExampleUrl))
             .ReturnsAsync(response);
 
-        ServerConfigDownloader downloader = new(httpClient.Object);
+        ServerConfigDownloader downloader = new(httpClient.Object, new ZipExtractor());
 
         Result<string, Error> result = await downloader.Download(exampleUrl, exampleComponent);
 
