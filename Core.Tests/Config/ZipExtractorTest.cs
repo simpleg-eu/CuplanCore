@@ -10,14 +10,15 @@ public class ZipExtractorTest : TestBase
     public void Extract_DummyZip_ExtractsCorrectly()
     {
         Extractor extractor = new ZipExtractor();
-
         string guid = Guid.NewGuid().ToString();
-        extractor.Extract($"{TestDataPath}/dummy.zip", guid);
+        byte[] packageData = File.ReadAllBytes($"{TestDataPath}/dummy.zip");
+        
+        extractor.Extract( packageData, guid);
+        
         bool expectedDirectoryExists = Directory.Exists($"{guid}");
         bool expectedExecutableWithinDirectoryExists = File.Exists($"{guid}/cp-config");
         bool expectedConfigFileWithinDirectoryExists = File.Exists($"{guid}/config/config.yaml");
         bool expectedLogConfigFileWithinDirectoryExists = File.Exists($"{guid}/config/log4rs.yaml");
-        
         Directory.Delete(guid, true);
         Assert.True(expectedDirectoryExists, "Expected directory does not exist.");
         Assert.True(expectedExecutableWithinDirectoryExists, "Expected executable file does not exist.");
