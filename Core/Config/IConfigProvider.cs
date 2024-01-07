@@ -17,4 +17,9 @@ public interface IConfigProvider : IDisposable
     /// </returns>
     /// <throws><see cref="InvalidOperationException" /> if the configuration located at the specified key is not of type T.</throws>
     public Task<Result<T, Error>> Get<T>(string filePath, string key);
+
+    /// <summary>
+    /// Cleans any cache mechanism.
+    /// </summary>
+    public void CleanCache();
 }
