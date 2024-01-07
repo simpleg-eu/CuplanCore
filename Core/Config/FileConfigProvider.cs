@@ -9,14 +9,14 @@ public class FileConfigProvider : IConfigProvider
     private const string KeySeparator = ":";
 
     private readonly Cache _cache;
-    private readonly TimeSpan _expireCacheItemAfterTimeSpan;
+    private readonly TimeSpan _expireCacheItemAfter;
     private readonly string _targetDirectory;
 
-    public FileConfigProvider(string targetDirectory)
+    public FileConfigProvider(string targetDirectory, Cache cache, TimeSpan expireCacheItemAfter)
     {
         _targetDirectory = targetDirectory;
-        _cache = new Cache(TimeSpan.FromHours(1));
-        _expireCacheItemAfterTimeSpan = TimeSpan.FromMinutes(30);
+        _cache = cache;
+        _expireCacheItemAfter = expireCacheItemAfter;
     }
 
     public void Dispose()
@@ -57,7 +57,7 @@ public class FileConfigProvider : IConfigProvider
 
             configObject = JObject.Parse(json);
 
-            _cache.Set(filePath, configObject, _expireCacheItemAfterTimeSpan);
+            _cache.Set(filePath, configObject, _expireCacheItemAfter);
         }
 
         string[] subKeys = key.Split(KeySeparator);
@@ -67,6 +67,11 @@ public class FileConfigProvider : IConfigProvider
         if (!valueResult.IsOk) return Result<T, Error>.Err(valueResult.UnwrapErr());
 
         return Result<T, Error>.Ok(valueResult.Unwrap());
+    }
+
+    public void CleanCache()
+    {
+        _cache.Clear();
     }
 
     private static Result<T, Error> GetValue<T>(IEnumerable<string> subKeys, JObject jsonObject)

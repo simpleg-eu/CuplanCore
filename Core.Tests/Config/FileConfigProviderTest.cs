@@ -47,13 +47,23 @@ internal class Child
 
 public class FileConfigProviderTest : TestBase
 {
+    private readonly Cache _cache;
+    private readonly TimeSpan _cacheExpireItemAfter;
+    private readonly FileConfigProvider _provider;
+
+    public FileConfigProviderTest()
+    {
+        _cache = new Cache(TimeSpan.FromHours(1));
+        _cacheExpireItemAfter = TimeSpan.FromMinutes(30);
+        _provider = new FileConfigProvider(TestDataPath, _cache, _cacheExpireItemAfter);
+    }
+    
     [Fact]
     public async Task Get_ExistingKey_ExpectedValue()
     {
         const int expectedValue = 1234;
 
-        FileConfigProvider configProvider = new(TestDataPath);
-        Result<int, Error> result = await configProvider.Get<int>("application.yaml", "Configuration:Nested:Test");
+        Result<int, Error> result = await _provider.Get<int>("application.yaml", "Configuration:Nested:Test");
 
         Assert.True(result.IsOk);
         Assert.Equal(expectedValue, result.Unwrap());
@@ -73,8 +83,7 @@ public class FileConfigProviderTest : TestBase
             }
         };
 
-        FileConfigProvider configProvider = new(TestDataPath);
-        Result<Child, Error> result = await configProvider.Get<Child>("dir1/dir2/example.yaml", "Parent:Child");
+        Result<Child, Error> result = await _provider.Get<Child>("dir1/dir2/example.yaml", "Parent:Child");
 
         Assert.True(result.IsOk);
         Assert.Equal(expectedValue, result.Unwrap());
@@ -89,11 +98,22 @@ public class FileConfigProviderTest : TestBase
             "https://cuplan.simpleg.eu"
         };
 
-        FileConfigProvider configProvider = new(TestDataPath);
         Result<string[], Error>
-            result = await configProvider.Get<string[]>("other/new/array.yaml", "Cors:Origins");
+            result = await _provider.Get<string[]>("other/new/array.yaml", "Cors:Origins");
 
         Assert.True(result.IsOk);
         Assert.True(origins.SequenceEqual(result.Unwrap()));
+    }
+
+    [Fact]
+    public void Reset_CleansCache()
+    {
+        const string key = "EXAMPLE";
+        const string value = "HAHAHA";
+        _cache.Set(key, value, _cacheExpireItemAfter);
+
+        _provider.CleanCache();
+        
+        Assert.True(_cache.IsEmpty);
     }
 }
