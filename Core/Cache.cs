@@ -31,6 +31,8 @@ public class Cache : IDisposable
         _timer.Dispose();
     }
 
+    public bool IsEmpty => _cache.IsEmpty;
+
     public void Set(string key, object value, TimeSpan expirationTime)
     {
         DateTimeOffset expiration = DateTimeOffset.UtcNow.Add(expirationTime);
@@ -65,6 +67,11 @@ public class Cache : IDisposable
     public void Remove(string key)
     {
         _cache.TryRemove(key, out _);
+    }
+
+    public void Clear()
+    {
+        _cache.Clear();
     }
 
     private class CacheItem<T>
