@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Cuplan.Core.Tests.Config;
 
-public class ServerConfigDownloaderTest : TestBase, IDisposable
+public class HttpDownloaderTest : TestBase, IDisposable
 {
     private string? _targetDirectory;
 
@@ -32,7 +32,7 @@ public class ServerConfigDownloaderTest : TestBase, IDisposable
         httpClient.Setup(h => h.GetAsync(mockExampleUrl))
             .ReturnsAsync(response);
 
-        ServerConfigDownloader downloader = new(httpClient.Object);
+        HttpDownloader downloader = new(httpClient.Object);
 
         Result<byte[], Error> result = await downloader.Download(exampleUrl, exampleStage, exampleEnvironment, exampleComponent);
 

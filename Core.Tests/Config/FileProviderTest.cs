@@ -45,17 +45,17 @@ internal class Child
     }
 }
 
-public class FileConfigProviderTest : TestBase
+public class FileProviderTest : TestBase
 {
     private readonly Cache _cache;
     private readonly TimeSpan _cacheExpireItemAfter;
-    private readonly FileConfigProvider _provider;
+    private readonly FileProvider _provider;
 
-    public FileConfigProviderTest()
+    public FileProviderTest()
     {
         _cache = new Cache(TimeSpan.FromHours(1));
         _cacheExpireItemAfter = TimeSpan.FromMinutes(30);
-        _provider = new FileConfigProvider(TestDataPath, _cache, _cacheExpireItemAfter);
+        _provider = new FileProvider(TestDataPath, _cache, _cacheExpireItemAfter);
     }
     
     [Fact]

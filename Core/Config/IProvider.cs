@@ -1,6 +1,6 @@
 namespace Core.Config;
 
-public interface IConfigProvider : IDisposable
+public interface IProvider : IDisposable
 {
     /// <summary>
     ///     Tries to get a configuration by its key.

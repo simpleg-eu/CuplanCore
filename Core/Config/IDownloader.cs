@@ -3,7 +3,7 @@ namespace Core.Config;
 /// <summary>
 /// Interface which provides facility to download configuration packages.
 /// </summary>
-public interface IConfigDownloader : IDisposable
+public interface IDownloader : IDisposable
 {
     /// <summary>
     /// Downloads the latest configuration from a specific configuration provider.

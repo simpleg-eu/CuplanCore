@@ -1,6 +1,6 @@
 namespace Core.Config;
 
-public class ConfigClient : IDisposable
+public class Client : IDisposable
 {
     private readonly string _host;
     private readonly string _stage;
@@ -8,22 +8,22 @@ public class ConfigClient : IDisposable
     private readonly string _component;
     private readonly string _workingPath;
     private readonly double _downloadAgainAfterSeconds;
-    private readonly IConfigDownloader _downloader;
+    private readonly IDownloader _downloader;
     private readonly IExtractor _extractor;
-    private readonly IConfigProvider _provider;
+    private readonly IProvider _provider;
     
     private DateTime _lastDownload = DateTime.UnixEpoch;
     
-    public ConfigClient(
+    public Client(
         string host,
         string stage,
         string environment,
         string component,
         string workingPath,
         double downloadAgainAfterSeconds,
-        IConfigDownloader downloader,
+        IDownloader downloader,
         IExtractor extractor,
-        IConfigProvider provider)
+        IProvider provider)
     {
         _host = host;
         _stage = stage;

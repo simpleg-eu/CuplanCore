@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Cuplan.Core.Tests.Config;
 
-public class ConfigClientTest : TestBase
+public class ClientTest : TestBase
 {
     private const string ExpectedValue = "1234abcd";
     private const string Host = "https://simpleg.eu";
@@ -18,12 +18,12 @@ public class ConfigClientTest : TestBase
 
     private readonly string _workingPath = Guid.NewGuid().ToString();
     private readonly byte[] _packageData = [];
-    private readonly Mock<IConfigDownloader> _downloaderMock;
+    private readonly Mock<IDownloader> _downloaderMock;
     private readonly Mock<IExtractor> _extractorMock;
-    private readonly Mock<IConfigProvider> _providerMock;
-    private readonly ConfigClient _client;
+    private readonly Mock<IProvider> _providerMock;
+    private readonly Client _client;
 
-    public ConfigClientTest()
+    public ClientTest()
     {
         _downloaderMock = new(MockBehavior.Strict);
         _downloaderMock.Setup(d => d.Download(

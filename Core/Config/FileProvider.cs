@@ -4,7 +4,7 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace Core.Config;
 
-public class FileConfigProvider : IConfigProvider
+public class FileProvider : IProvider
 {
     private const string KeySeparator = ":";
 
@@ -12,7 +12,7 @@ public class FileConfigProvider : IConfigProvider
     private readonly TimeSpan _expireCacheItemAfter;
     private readonly string _targetDirectory;
 
-    public FileConfigProvider(string targetDirectory, Cache cache, TimeSpan expireCacheItemAfter)
+    public FileProvider(string targetDirectory, Cache cache, TimeSpan expireCacheItemAfter)
     {
         _targetDirectory = targetDirectory;
         _cache = cache;

@@ -2,11 +2,11 @@ using System.Net;
 
 namespace Core.Config;
 
-public class ServerConfigDownloader : IConfigDownloader
+public class HttpDownloader : IDownloader
 {
     private readonly IHttpClient _client;
 
-    public ServerConfigDownloader(IHttpClient client)
+    public HttpDownloader(IHttpClient client)
     {
         _client = client;
     }
