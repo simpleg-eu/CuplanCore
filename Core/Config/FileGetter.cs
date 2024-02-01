@@ -4,7 +4,7 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace Core.Config;
 
-public class FileProvider : IProvider
+public class FileGetter : IGetter
 {
     private const string KeySeparator = ":";
 
@@ -12,7 +12,7 @@ public class FileProvider : IProvider
     private readonly TimeSpan _expireCacheItemAfter;
     private readonly string _targetDirectory;
 
-    public FileProvider(string targetDirectory, Cache cache, TimeSpan expireCacheItemAfter)
+    public FileGetter(string targetDirectory, Cache cache, TimeSpan expireCacheItemAfter)
     {
         _targetDirectory = targetDirectory;
         _cache = cache;
@@ -29,7 +29,7 @@ public class FileProvider : IProvider
     public async Task<Result<T, Error>> Get<T>(string filePath, string key)
     {
         filePath = $"{_targetDirectory}/{filePath}";
-        Result<object, Empty> cacheResult = _cache.TryGetValue(filePath);
+        var cacheResult = _cache.TryGetValue(filePath);
 
         JObject? configObject = null;
 
@@ -41,28 +41,28 @@ public class FileProvider : IProvider
                 return Result<T, Error>.Err(new Error(ErrorKind.NotFound,
                     $"could not find file: {filePath}"));
 
-            string configYaml = await File.ReadAllTextAsync(filePath);
-            IDeserializer deserializer =
+            var configYaml = await File.ReadAllTextAsync(filePath);
+            var deserializer =
                 new DeserializerBuilder().WithNamingConvention(CamelCaseNamingConvention.Instance).Build();
-            object? yamlObject = deserializer.Deserialize(configYaml);
+            var yamlObject = deserializer.Deserialize(configYaml);
 
             if (yamlObject is null)
                 return Result<T, Error>.Err(new Error(ErrorKind.InvalidFileContent,
                     "invalid file content"));
 
             // YAML conversion to JSON because Microconfig works with YAML.
-            ISerializer serializer = new SerializerBuilder().JsonCompatible().Build();
+            var serializer = new SerializerBuilder().JsonCompatible().Build();
 
-            string json = serializer.Serialize(yamlObject);
+            var json = serializer.Serialize(yamlObject);
 
             configObject = JObject.Parse(json);
 
             _cache.Set(filePath, configObject, _expireCacheItemAfter);
         }
 
-        string[] subKeys = key.Split(KeySeparator);
-        
-        Result<T, Error> valueResult = GetValue<T>(subKeys, configObject);
+        var subKeys = key.Split(KeySeparator);
+
+        var valueResult = GetValue<T>(subKeys, configObject);
 
         if (!valueResult.IsOk) return Result<T, Error>.Err(valueResult.UnwrapErr());
 
@@ -77,7 +77,7 @@ public class FileProvider : IProvider
     private static Result<T, Error> GetValue<T>(IEnumerable<string> subKeys, JObject jsonObject)
     {
         JToken? token = jsonObject;
-        foreach (string subKey in subKeys)
+        foreach (var subKey in subKeys)
         {
             token = token[subKey];
 

@@ -12,7 +12,7 @@ internal class ChildObject
     public override bool Equals(object? obj)
     {
         if (obj is null) return false;
-        ChildObject? other = obj as ChildObject;
+        var other = obj as ChildObject;
         if (other is null) return false;
 
         return A == other.A && B == other.B;
@@ -33,7 +33,7 @@ internal class Child
     public override bool Equals(object? obj)
     {
         if (obj is null) return false;
-        Child? other = obj as Child;
+        var other = obj as Child;
         if (other == null) return false;
 
         return Name == other.Name && Description == other.Description && Object.Equals(other.Object);
@@ -45,25 +45,25 @@ internal class Child
     }
 }
 
-public class FileProviderTest : TestBase
+public class FileGetterTest : TestBase
 {
     private readonly Cache _cache;
     private readonly TimeSpan _cacheExpireItemAfter;
-    private readonly FileProvider _provider;
+    private readonly FileGetter _getter;
 
-    public FileProviderTest()
+    public FileGetterTest()
     {
         _cache = new Cache(TimeSpan.FromHours(1));
         _cacheExpireItemAfter = TimeSpan.FromMinutes(30);
-        _provider = new FileProvider(TestDataPath, _cache, _cacheExpireItemAfter);
+        _getter = new FileGetter(TestDataPath, _cache, _cacheExpireItemAfter);
     }
-    
+
     [Fact]
     public async Task Get_ExistingKey_ExpectedValue()
     {
         const int expectedValue = 1234;
 
-        Result<int, Error> result = await _provider.Get<int>("application.yaml", "Configuration:Nested:Test");
+        var result = await _getter.Get<int>("application.yaml", "Configuration:Nested:Test");
 
         Assert.True(result.IsOk);
         Assert.Equal(expectedValue, result.Unwrap());
@@ -83,7 +83,7 @@ public class FileProviderTest : TestBase
             }
         };
 
-        Result<Child, Error> result = await _provider.Get<Child>("dir1/dir2/example.yaml", "Parent:Child");
+        var result = await _getter.Get<Child>("dir1/dir2/example.yaml", "Parent:Child");
 
         Assert.True(result.IsOk);
         Assert.Equal(expectedValue, result.Unwrap());
@@ -98,8 +98,8 @@ public class FileProviderTest : TestBase
             "https://cuplan.simpleg.eu"
         };
 
-        Result<string[], Error>
-            result = await _provider.Get<string[]>("other/new/array.yaml", "Cors:Origins");
+        var
+            result = await _getter.Get<string[]>("other/new/array.yaml", "Cors:Origins");
 
         Assert.True(result.IsOk);
         Assert.True(origins.SequenceEqual(result.Unwrap()));
@@ -112,8 +112,8 @@ public class FileProviderTest : TestBase
         const string value = "HAHAHA";
         _cache.Set(key, value, _cacheExpireItemAfter);
 
-        _provider.CleanCache();
-        
+        _getter.CleanCache();
+
         Assert.True(_cache.IsEmpty);
     }
 }

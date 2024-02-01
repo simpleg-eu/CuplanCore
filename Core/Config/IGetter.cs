@@ -1,6 +1,6 @@
 namespace Core.Config;
 
-public interface IProvider : IDisposable
+public interface IGetter : IDisposable
 {
     /// <summary>
     ///     Tries to get a configuration by its key.
@@ -19,7 +19,7 @@ public interface IProvider : IDisposable
     public Task<Result<T, Error>> Get<T>(string filePath, string key);
 
     /// <summary>
-    /// Cleans any cache mechanism.
+    ///     Cleans any cache mechanism.
     /// </summary>
     public void CleanCache();
 }

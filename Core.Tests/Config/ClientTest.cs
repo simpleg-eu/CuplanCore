@@ -15,40 +15,40 @@ public class ClientTest : TestBase
     private const double DownloadAgainAfterSeconds = 1;
     private const string FilePath = "application.yaml";
     private const string ConfigKey = "Parent:Child";
-
-    private readonly string _workingPath = Guid.NewGuid().ToString();
-    private readonly byte[] _packageData = [];
+    private readonly Client _client;
     private readonly Mock<IDownloader> _downloaderMock;
     private readonly Mock<IExtractor> _extractorMock;
-    private readonly Mock<IProvider> _providerMock;
-    private readonly Client _client;
+    private readonly byte[] _packageData = [];
+    private readonly Mock<IGetter> _providerMock;
+
+    private readonly string _workingPath = Guid.NewGuid().ToString();
 
     public ClientTest()
     {
-        _downloaderMock = new(MockBehavior.Strict);
+        _downloaderMock = new Mock<IDownloader>(MockBehavior.Strict);
         _downloaderMock.Setup(d => d.Download(
                 It.Is<string>(h => h == Host),
                 It.Is<string>(s => s == Stage),
                 It.Is<string>(e => e == Environment),
                 It.Is<string>(c => c == Component)))
             .Returns(Task.FromResult(Result<byte[], Error>.Ok(_packageData)));
-        _extractorMock = new(MockBehavior.Strict);
+        _extractorMock = new Mock<IExtractor>(MockBehavior.Strict);
         _extractorMock.Setup(e => e.Extract(It.Is<byte[]>(p => p.Equals(_packageData)), It.IsAny<string>()))
             .Returns(Result<Empty, Error>.Ok(new Empty()));
-        _providerMock = new(MockBehavior.Strict);
+        _providerMock = new Mock<IGetter>(MockBehavior.Strict);
         _providerMock.Setup(c =>
                 c.Get<string>(It.Is<string>(f => f == FilePath), It.Is<string>(k => k == ConfigKey)))
             .ReturnsAsync(Result<string, Error>.Ok(ExpectedValue));
         _providerMock.Setup(c => c.CleanCache());
-        _client = new(Host, Stage, Environment, Component, _workingPath, DownloadAgainAfterSeconds,
+        _client = new Client(Host, Stage, Environment, Component, _workingPath,
             _downloaderMock.Object, _extractorMock.Object, _providerMock.Object);
     }
-    
+
     [Fact]
     public async Task Get_EmptyWorkingPath_DownloadsConfiguration()
     {
-        Result<string, Error> result = await _client.Get<string>(FilePath, ConfigKey);
-        
+        var result = await _client.Get<string>(FilePath, ConfigKey);
+
         _client.Dispose();
         AssertExpectedValue(result);
         AssertCompleteFlowExecutedTimes(1);
@@ -60,8 +60,8 @@ public class ClientTest : TestBase
         await _client.Get<string>(FilePath, ConfigKey);
         Thread.Sleep(1500);
 
-        Result<string, Error> result = await _client.Get<string>(FilePath, ConfigKey);
-        
+        var result = await _client.Get<string>(FilePath, ConfigKey);
+
         _client.Dispose();
         AssertExpectedValue(result);
         AssertCompleteFlowExecutedTimes(2);
@@ -71,9 +71,9 @@ public class ClientTest : TestBase
     public void Dispose_RemovesWorkingPath()
     {
         Directory.CreateDirectory(_workingPath);
-        
+
         _client.Dispose();
-        
+
         Assert.False(Directory.Exists(_workingPath));
     }
 
@@ -90,8 +90,10 @@ public class ClientTest : TestBase
             It.Is<string>(s => s == Stage),
             It.Is<string>(e => e == Environment),
             It.Is<string>(c => c == Component)), Times.Exactly(times));
-        _extractorMock.Verify(e => e.Extract(It.Is<byte[]>(p => p.Equals(_packageData)), It.IsAny<string>()), Times.Exactly(times));
+        _extractorMock.Verify(e => e.Extract(It.Is<byte[]>(p => p.Equals(_packageData)), It.IsAny<string>()),
+            Times.Exactly(times));
         _providerMock.Verify(p => p.CleanCache(), Times.Exactly(times));
-        _providerMock.Verify(p => p.Get<string>(It.Is<string>(f => f == FilePath), It.Is<string>(k => k == ConfigKey)), Times.Exactly(times));
+        _providerMock.Verify(p => p.Get<string>(It.Is<string>(f => f == FilePath), It.Is<string>(k => k == ConfigKey)),
+            Times.Exactly(times));
     }
 }
