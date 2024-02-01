@@ -21,14 +21,16 @@ public class Result<TOk, TError>
 
     public TOk Unwrap()
     {
-        if (!IsOk) throw new InvalidOperationException("tried to unwrap 'Ok' when the result was an 'Err'.");
+        if (!IsOk)
+            throw new InvalidOperationException(
+                $"tried to unwrap 'Ok' when the result was an 'Err': {_error}");
 
         return _ok;
     }
 
     public TError UnwrapErr()
     {
-        if (IsOk) throw new InvalidOperationException("tried to unwrap 'Err' when the result was an 'Ok'.");
+        if (IsOk) throw new InvalidOperationException($"tried to unwrap 'Err' when the result was an 'Ok': {_ok}");
 
         return _error;
     }
