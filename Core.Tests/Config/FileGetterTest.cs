@@ -12,7 +12,7 @@ internal class ChildObject
     public override bool Equals(object? obj)
     {
         if (obj is null) return false;
-        var other = obj as ChildObject;
+        ChildObject? other = obj as ChildObject;
         if (other is null) return false;
 
         return A == other.A && B == other.B;
@@ -33,7 +33,7 @@ internal class Child
     public override bool Equals(object? obj)
     {
         if (obj is null) return false;
-        var other = obj as Child;
+        Child? other = obj as Child;
         if (other == null) return false;
 
         return Name == other.Name && Description == other.Description && Object.Equals(other.Object);
@@ -63,9 +63,8 @@ public class FileGetterTest : TestBase
     {
         const int expectedValue = 1234;
 
-        var result = await _getter.Get<int>("application.yaml", "Configuration:Nested:Test");
+        Result<int, Error> result = await _getter.Get<int>("application.yaml", "Configuration:Nested:Test");
 
-        Assert.True(result.IsOk);
         Assert.Equal(expectedValue, result.Unwrap());
     }
 
@@ -83,9 +82,8 @@ public class FileGetterTest : TestBase
             }
         };
 
-        var result = await _getter.Get<Child>("dir1/dir2/example.yaml", "Parent:Child");
+        Result<Child, Error> result = await _getter.Get<Child>("dir1/dir2/example.yaml", "Parent:Child");
 
-        Assert.True(result.IsOk);
         Assert.Equal(expectedValue, result.Unwrap());
     }
 
@@ -98,10 +96,8 @@ public class FileGetterTest : TestBase
             "https://cuplan.simpleg.eu"
         };
 
-        var
-            result = await _getter.Get<string[]>("other/new/array.yaml", "Cors:Origins");
+        Result<string[], Error> result = await _getter.Get<string[]>("other/new/array.yaml", "Cors:Origins");
 
-        Assert.True(result.IsOk);
         Assert.True(origins.SequenceEqual(result.Unwrap()));
     }
 

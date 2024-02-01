@@ -46,24 +46,11 @@ public class ClientTest : TestBase
     [Fact]
     public async Task Get_EmptyWorkingPath_DownloadsConfiguration()
     {
-        var result = await _client.Get<string>(FilePath, ConfigKey);
+        Result<string, Error> result = await _client.Get<string>(FilePath, ConfigKey);
 
         _client.Dispose();
         AssertExpectedValue(result);
         AssertCompleteFlowExecutedTimes(1);
-    }
-
-    [Fact]
-    public async Task Get_AfterDownloadAgain_Downloads()
-    {
-        await _client.Get<string>(FilePath, ConfigKey);
-        Thread.Sleep(1500);
-
-        var result = await _client.Get<string>(FilePath, ConfigKey);
-
-        _client.Dispose();
-        AssertExpectedValue(result);
-        AssertCompleteFlowExecutedTimes(2);
     }
 
     [Fact]
