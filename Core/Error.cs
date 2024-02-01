@@ -17,4 +17,9 @@ public class Error(string errorKind, string message)
     {
         return HashCode.Combine(ErrorKind, Message);
     }
+
+    public override string ToString()
+    {
+        return $"{ErrorKind}: {Message}";
+    }
 }
