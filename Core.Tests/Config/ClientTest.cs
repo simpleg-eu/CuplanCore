@@ -12,7 +12,6 @@ public class ClientTest : TestBase
     private const string Stage = "dummy";
     private const string Environment = "development";
     private const string Component = "dummy";
-    private const double DownloadAgainAfterSeconds = 1;
     private const string FilePath = "application.yaml";
     private const string ConfigKey = "Parent:Child";
     private readonly Client _client;
